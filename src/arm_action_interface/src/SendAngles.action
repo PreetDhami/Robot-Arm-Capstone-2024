@@ -1,5 +1,0 @@
-float32[] requested_angles
----
-float32[] final_angles
----
-float32[] current_angles

@@ -1,0 +1,35 @@
+<?xml version="1.0"?>
+<robot name="rover_arm">
+  <link name="base_link">
+    <visual>
+      <geometry>
+        <cylinder length="0.6" radius="0.2"/>
+      </geometry>
+    </visual>
+    <collision>
+      <origin rpy="0 0 0" xyz="0 0 0"/>
+      <geometry>
+        <mesh filename="/root/arm_ws/src/stl_files/base_link.stl"/>
+      </geometry>
+    </collision>
+  </link>
+
+  <link name="arm_link_0">
+    <visual>
+      <geometry>
+        <cylinder length="0.6" radius="0.2"/>
+      </geometry>
+    </visual>
+    <collision>
+      <origin rpy="0 0 0" xyz="0 0 0"/>
+      <geometry>
+        <mesh filename="/root/arm_ws/src/stl_files/arm_link_0.stl"/>
+      </geometry>
+    </collision>
+  </link>
+  <joint name="base_to_link_0" type="fixed">
+    <parent link="base_link"/>
+    <child link="arm_link_0"/>
+  </joint>
+
+</robot>
