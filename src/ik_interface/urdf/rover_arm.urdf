@@ -1,5 +1,7 @@
 <?xml version="1.0"?>
 <robot name="rover_arm">
+
+  <!--DEFINING ROBOT LINKS IN ORDER FROM BASE TO HAND-->
   <link name="base_link">
     <visual>
       <origin rpy="0 0 0" xyz="0 0 0"/>
@@ -106,9 +108,47 @@
   </link>
 
 
-  <joint name="base_to_link_0" type="fixed">
+
+
+  <!--DEFINING JOINTS FROM BASE TO HAND-->
+  <joint name="joint_1" type="revolute">
     <parent link="base_link"/>
-    <child link="arm_link_0"/>
+    <child link="link_1"/>
+    <origin rpy="0 0 0" xyz="0 0 0.061584"/>
+    <axis xyz="0 0 1"/>
+    <limit effort="1000.0" lower="-3.141592653589793" upper="3.141592653589793" velocity="2.5"/>
+  </joint>
+
+  <joint name="joint_1" type="revolute">
+    <parent link="base_link"/>
+    <child link="link_1"/>
+    <origin rpy="0 0 0" xyz="0 0 0.061584"/>
+    <axis xyz="0 0 1"/>
+    <limit effort="1000.0" lower="-3.141592653589793" upper="3.141592653589793" velocity="2.5"/>
+  </joint>
+
+  <joint name="joint_1" type="revolute">
+    <parent link="base_link"/>
+    <child link="link_1"/>
+    <origin rpy="0 0 0" xyz="0 0 0.061584"/>
+    <axis xyz="0 0 1"/>
+    <limit effort="1000.0" lower="-3.141592653589793" upper="3.141592653589793" velocity="2.5"/>
+  </joint>
+
+  <joint name="joint_1" type="revolute">
+    <parent link="base_link"/>
+    <child link="link_1"/>
+    <origin rpy="0 0 0" xyz="0 0 0.061584"/>
+    <axis xyz="0 0 1"/>
+    <limit effort="1000.0" lower="-3.141592653589793" upper="3.141592653589793" velocity="2.5"/>
+  </joint>
+
+  <joint name="joint_1" type="revolute">
+    <parent link="base_link"/>
+    <child link="link_1"/>
+    <origin rpy="0 0 0" xyz="0 0 0.061584"/>
+    <axis xyz="0 0 1"/>
+    <limit effort="1000.0" lower="-3.141592653589793" upper="3.141592653589793" velocity="2.5"/>
   </joint>
 
 
