@@ -1,0 +1,25 @@
+moveit_setup_assistant_config:
+  urdf:
+    package: ik_interface
+    relative_path: urdf/rover_arm.urdf
+  srdf:
+    relative_path: config/rover_arm.srdf
+  package_settings:
+    author_name: Preet Dhami
+    author_email: preetjot02@gmail.com
+    generated_timestamp: 1708041455
+  control_xacro:
+    command:
+      - position
+    state:
+      - position
+      - velocity
+  modified_urdf:
+    xacros:
+      - control_xacro
+  control_xacro:
+    command:
+      - position
+    state:
+      - position
+      - velocity
