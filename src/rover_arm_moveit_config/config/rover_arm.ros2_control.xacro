@@ -5,8 +5,8 @@
 
         <ros2_control name="${name}" type="system">
             <hardware>
-                <!-- By default, set up controllers for simulation. This won't work on real hardware -->
-                <plugin>mock_components/GenericSystem</plugin>
+                <plugin>odrive_ros2_control_plugin/ODriveHardwareInterface</plugin>
+                <param name="can">can0</param>
             </hardware>
             <joint name="base_joint">
                 <command_interface name="position"/>
@@ -14,6 +14,7 @@
                   <param name="initial_value">${initial_positions['base_joint']}</param>
                 </state_interface>
                 <state_interface name="velocity"/>
+                <param name="node_id">0</param>
             </joint>
             <joint name="shoulder_joint">
                 <command_interface name="position"/>
@@ -21,6 +22,7 @@
                   <param name="initial_value">${initial_positions['shoulder_joint']}</param>
                 </state_interface>
                 <state_interface name="velocity"/>
+                <param name="node_id">1</param>
             </joint>
             <joint name="elbow_pitch_joint">
                 <command_interface name="position"/>
@@ -28,6 +30,7 @@
                   <param name="initial_value">${initial_positions['elbow_pitch_joint']}</param>
                 </state_interface>
                 <state_interface name="velocity"/>
+                <param name="node_id">2</param>
             </joint>
             <joint name="elbow_roll_joint">
                 <command_interface name="position"/>
@@ -35,6 +38,7 @@
                   <param name="initial_value">${initial_positions['elbow_roll_joint']}</param>
                 </state_interface>
                 <state_interface name="velocity"/>
+                <param name="node_id">3</param>
             </joint>
             <joint name="wrist_pitch_joint">
                 <command_interface name="position"/>
@@ -42,6 +46,7 @@
                   <param name="initial_value">${initial_positions['wrist_pitch_joint']}</param>
                 </state_interface>
                 <state_interface name="velocity"/>
+                <param name="node_id">4</param>
             </joint>
             <joint name="gripper_joint">
                 <command_interface name="position"/>
@@ -49,6 +54,7 @@
                   <param name="initial_value">${initial_positions['gripper_joint']}</param>
                 </state_interface>
                 <state_interface name="velocity"/>
+                <param name="node_id">5</param>
             </joint>
 
         </ros2_control>
