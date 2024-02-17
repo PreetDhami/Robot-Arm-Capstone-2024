@@ -11,24 +11,16 @@ from launch_ros.substitutions import FindPackageShare
 def generate_launch_description():
     # Declare arguments
     declared_arguments = []
-#    declared_arguments.append(
-#        DeclareLaunchArgument(
-#            "gui",
-#            default_value="true",
-#            description="Start RViz2 automatically with this launch file.",
-#        )
-#    )
-#    declared_arguments.append(
-#        DeclareLaunchArgument(
-#            "use_mock_hardware",
-#            default_value="false",
-#            description="Start robot with mock hardware mirroring command to its states.",
-#        )
-#    )
+    declared_arguments.append(
+        DeclareLaunchArgument(
+            "gui",
+            default_value="true",
+            description="Start RViz2 automatically with this launch file.",
+        )
+    )
 
     # Initialize Arguments
-#    gui = LaunchConfiguration("gui")
-#    use_mock_hardware = LaunchConfiguration("use_mock_hardware")
+    gui = LaunchConfiguration("gui")
 
     # Get URDF via xacro
     robot_description_content = Command(
@@ -36,7 +28,7 @@ def generate_launch_description():
             PathJoinSubstitution([FindExecutable(name="xacro")]),
             " ",
             PathJoinSubstitution(
-                [FindPackageShare("odrive_botwheel_explorer"), "urdf", "diffbot.urdf.xacro"]
+                [FindPackageShare("rover_arm_moveit_config"), "config", "rover_arm.urdf.xacro"]
             ),
 
         ]
@@ -45,14 +37,14 @@ def generate_launch_description():
 
     robot_controllers = PathJoinSubstitution(
         [
-            FindPackageShare("odrive_botwheel_explorer"),
+            FindPackageShare("rover_arm_moveit_config"),
             "config",
-            "diffbot_controllers.yaml",
+            "rover_arm_moveit_config.yaml",
         ]
     )
-#    rviz_config_file = PathJoinSubstitution(
-#        [FindPackageShare("ros2_control_demo_description"), "diffbot/rviz", "diffbot.rviz"]
-#    )
+    rviz_config_file = PathJoinSubstitution(
+        [FindPackageShare("rover_arm_moveit_config"), "config", "moveit.rviz"]
+    )
 
     control_node = Node(
         package="controller_manager",
@@ -69,17 +61,17 @@ def generate_launch_description():
         output="both",
         parameters=[robot_description],
         remappings=[
-            ("/botwheel_explorer/cmd_vel_unstamped", "/cmd_vel"),
+            ("/rover_arm_moveit_config/cmd_vel_unstamped", "/cmd_vel"),
         ],
     )
-#    rviz_node = Node(
-#        package="rviz2",
-#        executable="rviz2",
-#        name="rviz2",
-#        output="log",
-#        arguments=["-d", rviz_config_file],
-#        condition=IfCondition(gui),
-#    )
+    rviz_node = Node(
+        package="rviz2",
+        executable="rviz2",
+        name="rviz2",
+        output="log",
+        arguments=["-d", rviz_config_file],
+        condition=IfCondition(gui),
+    )
 
     joint_state_broadcaster_spawner = Node(
         package="controller_manager",
@@ -90,16 +82,16 @@ def generate_launch_description():
     robot_controller_spawner = Node(
         package="controller_manager",
         executable="spawner",
-        arguments=["botwheel_explorer", "--controller-manager", "/controller_manager"],
+        arguments=["rover_arm_moveit_config", "--controller-manager", "/controller_manager"],
     )
 
-#    # Delay rviz start after `joint_state_broadcaster`
-#    delay_rviz_after_joint_state_broadcaster_spawner = RegisterEventHandler(
-#        event_handler=OnProcessExit(
-#            target_action=joint_state_broadcaster_spawner,
-#            on_exit=[rviz_node],
-#        )
-#    )
+   # Delay rviz start after `joint_state_broadcaster`
+    delay_rviz_after_joint_state_broadcaster_spawner = RegisterEventHandler(
+        event_handler=OnProcessExit(
+            target_action=joint_state_broadcaster_spawner,
+            on_exit=[rviz_node],
+        )
+    )
 
     # Delay start of robot_controller after `joint_state_broadcaster`
     delay_robot_controller_spawner_after_joint_state_broadcaster_spawner = RegisterEventHandler(
