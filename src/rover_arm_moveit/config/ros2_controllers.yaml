@@ -3,14 +3,14 @@ controller_manager:
   ros__parameters:
     update_rate: 100  # Hz
 
-    rover_arm_controller:
+    rover_arm:
       type: joint_trajectory_controller/JointTrajectoryController
 
 
     joint_state_broadcaster:
       type: joint_state_broadcaster/JointStateBroadcaster
 
-rover_arm_controller:
+rover_arm:
   ros__parameters:
     joints:
       - base_joint
