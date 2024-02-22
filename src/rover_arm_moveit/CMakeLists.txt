@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.22)
-project(rover_arm_moveit_config)
+project(rover_arm_moveit)
 
 find_package(ament_cmake REQUIRED)
 

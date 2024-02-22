@@ -135,6 +135,8 @@
     </inertial>
   </link>
 
+
+
   <joint name="base_joint" type="revolute">
     <parent link="base_link"/>
     <child link="arm_link_0"/>
