@@ -61,13 +61,6 @@ def generate_launch_description():
     )
 
 
-
-    moveit_config = (
-        MoveItConfigsBuilder("moveit_resources_panda")
-        .robot_description(file_path="config/panda.urdf.xacro")
-        .to_moveit_configs()
-    )
-
     control_node = Node(
         package="controller_manager",
         executable="ros2_control_node",
