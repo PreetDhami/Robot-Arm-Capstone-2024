@@ -20,7 +20,8 @@ from launch.substitutions import Command, FindExecutable, PathJoinSubstitution, 
 
 from launch_ros.actions import Node
 from launch_ros.substitutions import FindPackageShare
-
+from launch_param_builder import ParameterBuilder
+from moveit_configs_utils import MoveItConfigsBuilder
 
 def generate_launch_description():
     # Declare arguments
@@ -39,6 +40,22 @@ def generate_launch_description():
     )
     robot_description = {"robot_description": robot_description_content}
 
+    moveit_config = (
+        MoveItConfigsBuilder("rover_arm_moveit")
+        .robot_description(file_path="config/rover_arm.urdf.xacro")
+        .to_moveit_configs()
+    )
+
+    servo_params = (
+        ParameterBuilder("rover_arm_moveit")
+        .yaml(
+            parameter_namespace="rover_arm_moveit",
+            file_path="config/servo_config.yaml",
+        )
+        .to_dict()
+    )
+
+
     robot_controllers = PathJoinSubstitution(
         [
             FindPackageShare("rover_arm_moveit"),
@@ -47,6 +64,13 @@ def generate_launch_description():
         ]
     )
 
+
+
+    moveit_config = (
+        MoveItConfigsBuilder("moveit_resources_panda")
+        .robot_description(file_path="config/panda.urdf.xacro")
+        .to_moveit_configs()
+    )
 
     control_node = Node(
         package="controller_manager",
@@ -83,6 +107,16 @@ def generate_launch_description():
         arguments=["rover_arm_controller", "--controller-manager", "/controller_manager"],
     )
 
+    servo_node = Node(
+        package="moveit2_tutorials",
+        executable="servo_cpp_interface_demo",
+        output="screen",
+        parameters=[
+            servo_params,
+            moveit_config.robot_description,
+            moveit_config.robot_description_semantic,
+        ],
+    )
 
     # Delay start of robot_controller after `joint_state_broadcaster`
     delay_robot_controller_spawner_after_joint_state_broadcaster_spawner = RegisterEventHandler(
