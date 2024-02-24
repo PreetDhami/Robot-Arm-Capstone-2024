@@ -119,6 +119,7 @@ def generate_launch_description():
         robot_state_pub_node,
         joint_state_broadcaster_spawner,
         delay_robot_controller_spawner_after_joint_state_broadcaster_spawner,
+        servo_node,
     ]
 
     return LaunchDescription(declared_arguments + nodes)
