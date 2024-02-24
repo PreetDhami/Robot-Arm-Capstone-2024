@@ -41,7 +41,7 @@ def generate_launch_description():
     robot_description = {"robot_description": robot_description_content}
 
     moveit_config = (
-        MoveItConfigsBuilder("rover_arm")
+        ParameterBuilder("rover_arm")
         .robot_description(file_path="config/rover_arm.urdf.xacro")
         .to_moveit_configs()
     )
