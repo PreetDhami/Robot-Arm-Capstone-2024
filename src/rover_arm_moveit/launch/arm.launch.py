@@ -41,13 +41,13 @@ def generate_launch_description():
     robot_description = {"robot_description": robot_description_content}
 
     moveit_config = (
-        ParameterBuilder("rover_arm")
+        ParameterBuilder("rover_arm_moveit")
         .robot_description(file_path="config/rover_arm.urdf.xacro")
         .to_moveit_configs()
     )
 
     servo_params = (
-        ParameterBuilder("rover_arm")
+        ParameterBuilder("rover_arm_moveit")
         .yaml(
             parameter_namespace="rover_arm_moveit",
             file_path="config/servo_config.yaml",
