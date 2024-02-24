@@ -40,11 +40,7 @@ def generate_launch_description():
     )
     robot_description = {"robot_description": robot_description_content}
 
-    moveit_config = (
-        ParameterBuilder("rover_arm_moveit")
-        .robot_description(file_path="config/rover_arm.urdf.xacro")
-        .to_moveit_configs()
-    )
+
 
     servo_params = (
         ParameterBuilder("rover_arm_moveit")
@@ -113,8 +109,7 @@ def generate_launch_description():
         output="screen",
         parameters=[
             servo_params,
-            moveit_config.robot_description,
-            moveit_config.robot_description_semantic,
+            robot_description,
         ],
     )
 
