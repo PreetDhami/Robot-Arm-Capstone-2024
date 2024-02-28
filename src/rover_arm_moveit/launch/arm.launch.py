@@ -42,15 +42,6 @@ def generate_launch_description():
 
 
 
-    servo_params = (
-        ParameterBuilder("rover_arm_moveit")
-        .yaml(
-            parameter_namespace="rover_arm_moveit",
-            file_path="config/servo_config.yaml",
-        )
-        .to_dict()
-    )
-
 
     robot_controllers = PathJoinSubstitution(
         [
@@ -96,15 +87,7 @@ def generate_launch_description():
         arguments=["rover_arm_controller", "--controller-manager", "/controller_manager"],
     )
 
-    servo_node = Node(
-        package="moveit2_tutorials",
-        executable="servo_cpp_interface_demo",
-        output="screen",
-        parameters=[
-            servo_params,
-            robot_description,
-        ],
-    )
+
 
     # Delay start of robot_controller after `joint_state_broadcaster`
     delay_robot_controller_spawner_after_joint_state_broadcaster_spawner = RegisterEventHandler(
@@ -119,7 +102,7 @@ def generate_launch_description():
         robot_state_pub_node,
         joint_state_broadcaster_spawner,
         delay_robot_controller_spawner_after_joint_state_broadcaster_spawner,
-        servo_node,
+
     ]
 
     return LaunchDescription(declared_arguments + nodes)
