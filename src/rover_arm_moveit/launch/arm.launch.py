@@ -89,6 +89,12 @@ def generate_launch_description():
 
 
 
+    joy_node = Node(
+        package="joy",
+        executable="joy_node",
+    )
+
+
     # Delay start of robot_controller after `joint_state_broadcaster`
     delay_robot_controller_spawner_after_joint_state_broadcaster_spawner = RegisterEventHandler(
         event_handler=OnProcessExit(
@@ -97,11 +103,14 @@ def generate_launch_description():
         )
     )
 
+
+
     nodes = [
         control_node,
         robot_state_pub_node,
         joint_state_broadcaster_spawner,
         delay_robot_controller_spawner_after_joint_state_broadcaster_spawner,
+        joy_node,
 
     ]
 
