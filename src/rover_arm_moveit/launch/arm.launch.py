@@ -94,6 +94,11 @@ def generate_launch_description():
         executable="joy_node",
     )
 
+    arm_teleop_node = Node(
+        package="arm_teleop",
+        executable="arm_teleop_node",
+    )
+
 
     # Delay start of robot_controller after `joint_state_broadcaster`
     delay_robot_controller_spawner_after_joint_state_broadcaster_spawner = RegisterEventHandler(
@@ -111,6 +116,7 @@ def generate_launch_description():
         joint_state_broadcaster_spawner,
         delay_robot_controller_spawner_after_joint_state_broadcaster_spawner,
         joy_node,
+        arm_teleop_node,
 
     ]
 
