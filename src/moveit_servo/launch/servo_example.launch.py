@@ -1,30 +1,24 @@
-# Copyright 2020 ros2_control Development Team
-#
-# Licensed under the Apache License, Version 2.0 (the "License");
-# you may not use this file except in compliance with the License.
-# You may obtain a copy of the License at
-#
-#     http://www.apache.org/licenses/LICENSE-2.0
-#
-# Unless required by applicable law or agreed to in writing, software
-# distributed under the License is distributed on an "AS IS" BASIS,
-# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-# See the License for the specific language governing permissions and
-# limitations under the License.
 import os
 import yaml
 from launch import LaunchDescription
-from launch.actions import RegisterEventHandler
-from launch.event_handlers import OnProcessExit
-from launch.substitutions import Command, FindExecutable, PathJoinSubstitution
-from launch_ros.actions import ComposableNodeContainer
 from launch_ros.actions import Node
-from launch_ros.substitutions import FindPackageShare
-from moveit_configs_utils import MoveItConfigsBuilder
-from launch_ros.descriptions import ComposableNode
-
-
 from ament_index_python.packages import get_package_share_directory
+from launch_ros.actions import ComposableNodeContainer
+from launch_ros.descriptions import ComposableNode
+from launch.actions import ExecuteProcess
+import xacro
+from moveit_configs_utils import MoveItConfigsBuilder
+
+
+def load_file(package_name, file_path):
+    package_path = get_package_share_directory(package_name)
+    absolute_file_path = os.path.join(package_path, file_path)
+
+    try:
+        with open(absolute_file_path, "r") as file:
+            return file.read()
+    except EnvironmentError:  # parent of IOError, OSError *and* WindowsError where available
+        return None
 
 
 def load_yaml(package_name, file_path):
@@ -39,30 +33,17 @@ def load_yaml(package_name, file_path):
 
 
 def generate_launch_description():
-    # Declare arguments
-    declared_arguments = []
-
-    # Get URDF via xacro
-    robot_description_content = Command(
-        [
-            PathJoinSubstitution([FindExecutable(name="xacro")]),
-            " ",
-            PathJoinSubstitution(
-                [FindPackageShare("rover_arm_moveit"), "config", "rover_arm.urdf.xacro"]
-            ),
-
-        ]
-    )
-    robot_description = {"robot_description": robot_description_content}
-
     moveit_config = (
-        MoveItConfigsBuilder("rover_arm", package_name="rover_arm_moveit")
-        .robot_description(file_path="config/rover_arm.urdf.xacro")
+        MoveItConfigsBuilder("moveit_resources_panda")
+        .robot_description(file_path="config/panda.urdf.xacro")
         .to_moveit_configs()
     )
 
-    servo_params = {"moveit_servo": load_yaml("rover_arm_moveit", "config/servo_config.yaml")}
+    # Get parameters for the Servo node
+    servo_yaml = load_yaml("moveit_servo", "config/panda_simulated_config.yaml")
+    servo_params = {"moveit_servo": servo_yaml}
 
+    # RViz
     rviz_config_file = (
         get_package_share_directory("moveit_servo") + "/config/demo_rviz_config.rviz"
     )
@@ -78,66 +59,40 @@ def generate_launch_description():
         ],
     )
 
-
-
-    robot_controllers = PathJoinSubstitution(
-        [
-            FindPackageShare("rover_arm_moveit"),
-            "config",
-            "ros2_controllers.yaml",
-        ]
+    # ros2_control using FakeSystem as hardware
+    ros2_controllers_path = os.path.join(
+        get_package_share_directory("moveit_resources_panda_moveit_config"),
+        "config",
+        "ros2_controllers.yaml",
     )
-
-
-    control_node = Node(
+    ros2_control_node = Node(
         package="controller_manager",
         executable="ros2_control_node",
-        parameters=[robot_description, robot_controllers],
-        output="both",
-        remappings=[
-            (
-                "/forward_position_controller/commands",
-                "/position_commands",
-            ),
-        ]
+        parameters=[moveit_config.robot_description, ros2_controllers_path],
+        output="screen",
     )
-
-    robot_state_pub_node = Node(
-        package="robot_state_publisher",
-        executable="robot_state_publisher",
-        output="both",
-        parameters=[robot_description],
-
-    )
-
 
     joint_state_broadcaster_spawner = Node(
         package="controller_manager",
         executable="spawner",
-        arguments=["joint_state_broadcaster", "--controller-manager", "/controller_manager"],
-
+        arguments=[
+            "joint_state_broadcaster",
+            "--controller-manager-timeout",
+            "300",
+            "--controller-manager",
+            "/controller_manager",
+        ],
     )
 
-    robot_controller_spawner = Node(
+    panda_arm_controller_spawner = Node(
         package="controller_manager",
         executable="spawner",
-        arguments=["rover_arm_controller", "--controller-manager", "/controller_manager"],
+        arguments=["panda_arm_controller", "-c", "/controller_manager"],
     )
 
-
-
-
-    # Delay start of robot_controller after `joint_state_broadcaster`
-    delay_robot_controller_spawner_after_joint_state_broadcaster_spawner = RegisterEventHandler(
-        event_handler=OnProcessExit(
-            target_action=joint_state_broadcaster_spawner,
-            on_exit=[robot_controller_spawner],
-        )
-    )
-
-
+    # Launch as much as possible in components
     container = ComposableNodeContainer(
-        name="moveit_servo_container",
+        name="moveit_servo_demo_container",
         namespace="/",
         package="rclcpp_components",
         executable="component_container_mt",
@@ -164,7 +119,7 @@ def generate_launch_description():
                 package="tf2_ros",
                 plugin="tf2_ros::StaticTransformBroadcasterNode",
                 name="static_tf2_broadcaster",
-                parameters=[{"child_frame_id": "/base_link", "frame_id": "/world"}],
+                parameters=[{"child_frame_id": "/panda_link0", "frame_id": "/world"}],
             ),
             ComposableNode(
                 package="moveit_servo",
@@ -193,18 +148,13 @@ def generate_launch_description():
         output="screen",
     )
 
-
-
-
-
-    nodes = [
-        control_node,
-        robot_state_pub_node,
-        joint_state_broadcaster_spawner,
-        delay_robot_controller_spawner_after_joint_state_broadcaster_spawner,
-        servo_node,
-        container,
-        rviz_node,
-    ]
-
-    return LaunchDescription(declared_arguments + nodes)
+    return LaunchDescription(
+        [
+            rviz_node,
+            ros2_control_node,
+            joint_state_broadcaster_spawner,
+            panda_arm_controller_spawner,
+            servo_node,
+            container,
+        ]
+    )
