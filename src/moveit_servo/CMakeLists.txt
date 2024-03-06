@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.22)
-project(arm_servo)
+project(moveit_servo)
 
 # C++ Libraries #################################################
 
