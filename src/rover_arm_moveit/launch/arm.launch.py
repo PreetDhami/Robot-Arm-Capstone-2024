@@ -63,20 +63,20 @@ def generate_launch_description():
 
     servo_params = {"moveit_servo": load_yaml("rover_arm_moveit", "config/servo_config.yaml")}
 
-    rviz_config_file = (
-        get_package_share_directory("moveit_servo") + "/config/demo_rviz_config.rviz"
-    )
-    rviz_node = Node(
-        package="rviz2",
-        executable="rviz2",
-        name="rviz2",
-        output="log",
-        arguments=["-d", rviz_config_file],
-        parameters=[
-            moveit_config.robot_description,
-            moveit_config.robot_description_semantic,
-        ],
-    )
+    # rviz_config_file = (
+    #     get_package_share_directory("moveit_servo") + "/config/demo_rviz_config.rviz"
+    # )
+    # rviz_node = Node(
+    #     package="rviz2",
+    #     executable="rviz2",
+    #     name="rviz2",
+    #     output="log",
+    #     arguments=["-d", rviz_config_file],
+    #     parameters=[
+    #         moveit_config.robot_description,
+    #         moveit_config.robot_description_semantic,
+    #     ],
+    # )
 
 
 
@@ -204,7 +204,7 @@ def generate_launch_description():
         delay_robot_controller_spawner_after_joint_state_broadcaster_spawner,
         servo_node,
         container,
-        rviz_node,
+
     ]
 
     return LaunchDescription(declared_arguments + nodes)
