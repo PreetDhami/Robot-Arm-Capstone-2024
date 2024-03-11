@@ -45,7 +45,7 @@ private:
 };
 
 struct Axis {
-    Axis(SocketCanIntf* can_intf, uint32_t node_id, double gear_ratio) : can_intf_(can_intf), node_id_(node_id), gear_ratio_(gear_ratio) {}
+    Axis(SocketCanIntf* can_intf, uint32_t node_id) : can_intf_(can_intf), node_id_(node_id) {}
 
     void on_can_msg(const rclcpp::Time& timestamp, const can_frame& frame);
 
@@ -53,8 +53,6 @@ struct Axis {
 
     SocketCanIntf* can_intf_;
     uint32_t node_id_;
-    double gear_ratio_;
-
 
     // Commands (ros2_control => ODrives)
     double pos_setpoint_ = 0.0f;
@@ -116,7 +114,6 @@ CallbackReturn ODriveHardwareInterface::on_init(const hardware_interface::Hardwa
 
     for (auto& joint : info_.joints) {
         axes_.emplace_back(&can_intf_, std::stoi(joint.parameters.at("node_id")));
-        axes_.emplace_back(&gear_ratio_, std::stoi(joint.parameters.at("gear_ratio")));
     }
 
     return CallbackReturn::SUCCESS;
@@ -288,7 +285,7 @@ return_type ODriveHardwareInterface::write(const rclcpp::Time&, const rclcpp::Du
         // Send the CAN message that fits the set of enabled setpoints
         if (axis.pos_input_enabled_) {
             Set_Input_Pos_msg_t msg;
-            msg.Input_Pos = axis.gear_ratio_*axis.pos_setpoint_;
+            msg.Input_Pos = axis.pos_setpoint_;
             msg.Vel_FF = axis.vel_input_enabled_ ? axis.vel_setpoint_ : 0.0f;
             msg.Torque_FF = axis.torque_input_enabled_ ? axis.torque_setpoint_ : 0.0f;
             axis.send(msg);
@@ -332,8 +329,8 @@ void Axis::on_can_msg(const rclcpp::Time&, const can_frame& frame) {
     switch (cmd) {
         case Get_Encoder_Estimates_msg_t::cmd_id: {
             if (Get_Encoder_Estimates_msg_t msg; try_decode(msg)) {
-                pos_estimate_ = msg.Pos_Estimate/gear_ratio_;
-                vel_estimate_ = msg.Vel_Estimate/gear_ratio_;
+                pos_estimate_ = msg.Pos_Estimate;
+                vel_estimate_ = msg.Vel_Estimate;
             }
         } break;
         case Get_Torques_msg_t::cmd_id: {
