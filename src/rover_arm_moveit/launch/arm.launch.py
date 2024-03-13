@@ -63,20 +63,20 @@ def generate_launch_description():
 
     servo_params = {"moveit_servo": load_yaml("rover_arm_moveit", "config/servo_config.yaml")}
 
-    # rviz_config_file = (
-    #     get_package_share_directory("moveit_servo") + "/config/demo_rviz_config.rviz"
-    # )
-    # rviz_node = Node(
-    #     package="rviz2",
-    #     executable="rviz2",
-    #     name="rviz2",
-    #     output="log",
-    #     arguments=["-d", rviz_config_file],
-    #     parameters=[
-    #         moveit_config.robot_description,
-    #         moveit_config.robot_description_semantic,
-    #     ],
-    # )
+    rviz_config_file = (
+        get_package_share_directory("moveit_servo") + "/config/demo_rviz_config.rviz"
+    )
+    rviz_node = Node(
+        package="rviz2",
+        executable="rviz2",
+        name="rviz2",
+        output="log",
+        arguments=["-d", rviz_config_file],
+        parameters=[
+            moveit_config.robot_description,
+            moveit_config.robot_description_semantic,
+        ],
+    )
 
 
 
@@ -136,62 +136,62 @@ def generate_launch_description():
     )
 
 
-    container = ComposableNodeContainer(
-        name="moveit_servo_container",
-        namespace="/",
-        package="rclcpp_components",
-        executable="component_container_mt",
-        composable_node_descriptions=[
-            # Example of launching Servo as a node component
-            # Assuming ROS2 intraprocess communications works well, this is a more efficient way.
-            # ComposableNode(
-            #     package="moveit_servo",
-            #     plugin="moveit_servo::ServoServer",
-            #     name="servo_server",
-            #     parameters=[
-            #         servo_params,
-            #         moveit_config.robot_description,
-            #         moveit_config.robot_description_semantic,
-            #     ],
-            # ),
-            ComposableNode(
-                package="robot_state_publisher",
-                plugin="robot_state_publisher::RobotStatePublisher",
-                name="robot_state_publisher",
-                parameters=[moveit_config.robot_description],
-            ),
-            ComposableNode(
-                package="tf2_ros",
-                plugin="tf2_ros::StaticTransformBroadcasterNode",
-                name="static_tf2_broadcaster",
-                parameters=[{"child_frame_id": "/base_link", "frame_id": "/world"}],
-            ),
-            ComposableNode(
-                package="moveit_servo",
-                plugin="moveit_servo::JoyToServoPub",
-                name="controller_to_servo_node",
-            ),
-            ComposableNode(
-                package="joy",
-                plugin="joy::Joy",
-                name="joy_node",
-            ),
-        ],
-        output="screen",
-    )
-    # Launch a standalone Servo node.
-    # As opposed to a node component, this may be necessary (for example) if Servo is running on a different PC
-    servo_node = Node(
-        package="moveit_servo",
-        executable="servo_node_main",
-        parameters=[
-            servo_params,
-            moveit_config.robot_description,
-            moveit_config.robot_description_semantic,
-            moveit_config.robot_description_kinematics,
-        ],
-        output="screen",
-    )
+    # container = ComposableNodeContainer(
+    #     name="moveit_servo_container",
+    #     namespace="/",
+    #     package="rclcpp_components",
+    #     executable="component_container_mt",
+    #     composable_node_descriptions=[
+    #         # Example of launching Servo as a node component
+    #         # Assuming ROS2 intraprocess communications works well, this is a more efficient way.
+    #         # ComposableNode(
+    #         #     package="moveit_servo",
+    #         #     plugin="moveit_servo::ServoServer",
+    #         #     name="servo_server",
+    #         #     parameters=[
+    #         #         servo_params,
+    #         #         moveit_config.robot_description,
+    #         #         moveit_config.robot_description_semantic,
+    #         #     ],
+    #         # ),
+    #         ComposableNode(
+    #             package="robot_state_publisher",
+    #             plugin="robot_state_publisher::RobotStatePublisher",
+    #             name="robot_state_publisher",
+    #             parameters=[moveit_config.robot_description],
+    #         ),
+    #         ComposableNode(
+    #             package="tf2_ros",
+    #             plugin="tf2_ros::StaticTransformBroadcasterNode",
+    #             name="static_tf2_broadcaster",
+    #             parameters=[{"child_frame_id": "/base_link", "frame_id": "/world"}],
+    #         ),
+    #         ComposableNode(
+    #             package="moveit_servo",
+    #             plugin="moveit_servo::JoyToServoPub",
+    #             name="controller_to_servo_node",
+    #         ),
+    #         ComposableNode(
+    #             package="joy",
+    #             plugin="joy::Joy",
+    #             name="joy_node",
+    #         ),
+    #     ],
+    #     output="screen",
+    # )
+    # # Launch a standalone Servo node.
+    # # As opposed to a node component, this may be necessary (for example) if Servo is running on a different PC
+    # servo_node = Node(
+    #     package="joy_to_joint_controller",
+    #     executable="joy_to_joint_controller_node",
+    #     parameters=[
+    #         servo_params,
+    #         moveit_config.robot_description,
+    #         moveit_config.robot_description_semantic,
+    #         moveit_config.robot_description_kinematics,
+    #     ],
+    #     output="screen",
+    # )
 
 
 
@@ -202,8 +202,9 @@ def generate_launch_description():
         robot_state_pub_node,
         joint_state_broadcaster_spawner,
         delay_robot_controller_spawner_after_joint_state_broadcaster_spawner,
-        servo_node,
-        container,
+        # servo_node,
+        # container,
+        rviz_node,
 
     ]
 

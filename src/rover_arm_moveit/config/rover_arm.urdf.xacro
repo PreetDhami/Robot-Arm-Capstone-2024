@@ -3,7 +3,7 @@
     <xacro:arg name="initial_positions_file" default="initial_positions.yaml" />
 
     <!-- Import rover_arm urdf file -->
-    <xacro:include filename="$(find ik_interface)/urdf/rover_arm.urdf" />
+    <xacro:include filename="$(find rover_arm_moveit)/urdf/rover_arm.urdf" />
 
     <!-- Import control_xacro -->
     <xacro:include filename="rover_arm.ros2_control.xacro" />

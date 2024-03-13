@@ -8,8 +8,9 @@ endif()
 # find dependencies
 find_package(ament_cmake REQUIRED)
 find_package(rclcpp REQUIRED)
-find_package(sensor_msgs REQUIRED)
-find_package(trajectory_msgs REQUIRED)
+find_package(moveit_servo REQUIRED)
+find_package(pluginlib REQUIRED)
+
 # uncomment the following section in order to fill in
 # further dependencies manually.
 # find_package(<dependency> REQUIRED)
@@ -21,10 +22,9 @@ target_include_directories(joy_to_joint_controller_node PUBLIC
 target_compile_features(joy_to_joint_controller_node PUBLIC c_std_99 cxx_std_17)  # Require C99 and C++17
 ament_target_dependencies(
   joy_to_joint_controller_node
-
+  "pluginlib"
   "rclcpp"
-  "sensor_msgs"
-  "trajectory_msgs"
+  "moveit_servo"
 )
 
 

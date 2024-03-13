@@ -1,6 +1,6 @@
 moveit_setup_assistant_config:
   urdf:
-    package: ik_interface
+    package: rover_arm_moveit
     relative_path: urdf/rover_arm.urdf
   srdf:
     relative_path: config/rover_arm.srdf
