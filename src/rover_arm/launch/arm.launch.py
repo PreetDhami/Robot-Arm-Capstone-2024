@@ -48,7 +48,7 @@ def generate_launch_description():
             PathJoinSubstitution([FindExecutable(name="xacro")]),
             " ",
             PathJoinSubstitution(
-                [FindPackageShare("rover_arm_moveit"), "config", "rover_arm.urdf.xacro"]
+                [FindPackageShare("rover_arm"), "config", "rover_arm.urdf.xacro"]
             ),
 
         ]
@@ -56,33 +56,33 @@ def generate_launch_description():
     robot_description = {"robot_description": robot_description_content}
 
     moveit_config = (
-        MoveItConfigsBuilder("rover_arm", package_name="rover_arm_moveit")
+        MoveItConfigsBuilder("rover_arm", package_name="rover_arm")
         .robot_description(file_path="config/rover_arm.urdf.xacro")
         .to_moveit_configs()
     )
 
-    servo_params = {"moveit_servo": load_yaml("rover_arm_moveit", "config/servo_config.yaml")}
+    servo_params = {"moveit_servo": load_yaml("rover_arm", "config/servo_config.yaml")}
 
-    rviz_config_file = (
-        get_package_share_directory("moveit_servo") + "/config/demo_rviz_config.rviz"
-    )
-    rviz_node = Node(
-        package="rviz2",
-        executable="rviz2",
-        name="rviz2",
-        output="log",
-        arguments=["-d", rviz_config_file],
-        parameters=[
-            moveit_config.robot_description,
-            moveit_config.robot_description_semantic,
-        ],
-    )
+    # rviz_config_file = (
+    #     get_package_share_directory("moveit_servo") + "/config/demo_rviz_config.rviz"
+    # )
+    # rviz_node = Node(
+    #     package="rviz2",
+    #     executable="rviz2",
+    #     name="rviz2",
+    #     output="log",
+    #     arguments=["-d", rviz_config_file],
+    #     parameters=[
+    #         moveit_config.robot_description,
+    #         moveit_config.robot_description_semantic,
+    #     ],
+    # )
 
 
 
     robot_controllers = PathJoinSubstitution(
         [
-            FindPackageShare("rover_arm_moveit"),
+            FindPackageShare("rover_arm"),
             "config",
             "ros2_controllers.yaml",
         ]
@@ -204,7 +204,7 @@ def generate_launch_description():
         delay_robot_controller_spawner_after_joint_state_broadcaster_spawner,
         # servo_node,
         # container,
-        rviz_node,
+        #rviz_node,
 
     ]
 
