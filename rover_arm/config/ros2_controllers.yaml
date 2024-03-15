@@ -21,7 +21,7 @@ rover_arm_controller:
       - wrist_roll_joint
     command_interfaces:
       - position
-
+      - velocity
     state_interfaces:
       - position
       - velocity

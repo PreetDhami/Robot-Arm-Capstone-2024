@@ -164,10 +164,10 @@ class JoyToServoNode : public rclcpp::Node {
       servo_start_client_->async_send_request(std::make_shared<std_srvs::srv::Trigger::Request>());
 
       // Load the collision scene asynchronously
-      collision_pub_thread_ = std::thread([this]() {
-        auto ps = std::make_unique<moveit_msgs::msg::PlanningScene>();
-        collision_pub_->publish(std::move(ps));
-      });
+      // collision_pub_thread_ = std::thread([this]() {
+      //   auto ps = std::make_unique<moveit_msgs::msg::PlanningScene>();
+      //   collision_pub_->publish(std::move(ps));
+      // });
     }
 
     ~JoyToServoNode() override

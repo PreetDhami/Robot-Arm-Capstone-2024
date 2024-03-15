@@ -1,16 +1,3 @@
-# Copyright 2020 ros2_control Development Team
-#
-# Licensed under the Apache License, Version 2.0 (the "License");
-# you may not use this file except in compliance with the License.
-# You may obtain a copy of the License at
-#
-#     http://www.apache.org/licenses/LICENSE-2.0
-#
-# Unless required by applicable law or agreed to in writing, software
-# distributed under the License is distributed on an "AS IS" BASIS,
-# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-# See the License for the specific language governing permissions and
-# limitations under the License.
 import os
 import yaml
 from launch import LaunchDescription
@@ -37,8 +24,7 @@ def load_yaml(package_name, file_path):
 
 
 def generate_launch_description():
-    # Declare arguments
-    declared_arguments = []
+
 
     # Get URDF via xacro
     robot_description_content = Command(
@@ -56,11 +42,10 @@ def generate_launch_description():
     moveit_config = (
         MoveItConfigsBuilder("rover_arm", package_name="rover_arm")
         .robot_description(file_path="config/rover_arm.urdf.xacro")
-        .robot_description_kinematics(file_path="config/kinematics.yaml")
         .to_moveit_configs()
     )
-
-    servo_params = {"moveit_servo": load_yaml("rover_arm", "config/servo_config.yaml")}
+    servo_yaml = load_yaml("rover_arm", "config/servo_config.yaml")
+    servo_params = {"moveit_servo": servo_yaml}
 
     rviz_config_file = (
         get_package_share_directory("rover_arm") + "/config/rviz_config.rviz"
@@ -74,11 +59,9 @@ def generate_launch_description():
         parameters=[
             moveit_config.robot_description,
             moveit_config.robot_description_semantic,
-            moveit_config.robot_description_kinematics,
+
         ],
     )
-
-
 
     robot_controllers = PathJoinSubstitution(
         [
@@ -88,18 +71,11 @@ def generate_launch_description():
         ]
     )
 
-
     control_node = Node(
         package="controller_manager",
         executable="ros2_control_node",
-        parameters=[robot_description, robot_controllers],
+        parameters=[moveit_config.robot_description, robot_controllers],
         output="both",
-        remappings=[
-            (
-                "/forward_position_controller/commands",
-                "/position_commands",
-            ),
-        ]
     )
 
     robot_state_pub_node = Node(
@@ -170,4 +146,4 @@ def generate_launch_description():
 
     
 
-    return LaunchDescription(declared_arguments + nodes)
+    return LaunchDescription(nodes)
