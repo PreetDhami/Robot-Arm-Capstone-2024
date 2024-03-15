@@ -18,12 +18,10 @@ rover_arm_controller:
       - elbow_pitch_joint
       - elbow_roll_joint
       - wrist_pitch_joint
-      - gripper_joint
+      - wrist_roll_joint
     command_interfaces:
       - position
       - velocity
-      - effort
     state_interfaces:
       - position
       - velocity
-      - effort

@@ -177,7 +177,7 @@
     <limit effort="1000.0" lower="-1.57079632679" upper="3.141592653589793" velocity="2.5"/>
   </joint>
 
-  <joint name="gripper_joint" type="continuous">
+  <joint name="wrist_roll_joint" type="continuous">
     <parent link="arm_link_4"/>
     <child link="arm_gripper"/>
     <origin rpy="0 0 0" xyz="-0.050 0 0.050484"/>
