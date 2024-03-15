@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.8)
-project(joy_to_joint_controller)
+project(joy_to_servo)
 
 if(CMAKE_COMPILER_IS_GNUCXX OR CMAKE_CXX_COMPILER_ID MATCHES "Clang")
   add_compile_options(-Wall -Wextra -Wpedantic)
@@ -7,28 +7,23 @@ endif()
 
 # find dependencies
 find_package(ament_cmake REQUIRED)
-find_package(rclcpp REQUIRED)
 find_package(moveit_servo REQUIRED)
-find_package(pluginlib REQUIRED)
+find_package(joy REQUIRED)
+find_package(rover_arm_urdf REQUIRED)
 
-# uncomment the following section in order to fill in
-# further dependencies manually.
-# find_package(<dependency> REQUIRED)
-
-add_executable(joy_to_joint_controller_node src/joy_to_joint_controller_node.cpp)
-target_include_directories(joy_to_joint_controller_node PUBLIC
+add_executable(joy_to_servo_node src/joy_to_servo_node.cpp)
+target_include_directories(joy_to_servo_node PUBLIC
   $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
   $<INSTALL_INTERFACE:include>)
-target_compile_features(joy_to_joint_controller_node PUBLIC c_std_99 cxx_std_17)  # Require C99 and C++17
+target_compile_features(joy_to_servo_node PUBLIC c_std_99 cxx_std_17)  # Require C99 and C++17
 ament_target_dependencies(
-  joy_to_joint_controller_node
-  "pluginlib"
-  "rclcpp"
+  joy_to_servo_node
   "moveit_servo"
+  "joy"
+  "rover_arm_urdf"
 )
 
-
-install(TARGETS joy_to_joint_controller_node
+install(TARGETS joy_to_servo_node
   DESTINATION lib/${PROJECT_NAME})
 
 if(BUILD_TESTING)

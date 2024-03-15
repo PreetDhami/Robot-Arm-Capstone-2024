@@ -56,25 +56,27 @@ def generate_launch_description():
     moveit_config = (
         MoveItConfigsBuilder("rover_arm", package_name="rover_arm")
         .robot_description(file_path="config/rover_arm.urdf.xacro")
+        .robot_description_kinematics(file_path="config/kinematics.yaml")
         .to_moveit_configs()
     )
 
     servo_params = {"moveit_servo": load_yaml("rover_arm", "config/servo_config.yaml")}
 
-    # rviz_config_file = (
-    #     get_package_share_directory("moveit_servo") + "/config/demo_rviz_config.rviz"
-    # )
-    # rviz_node = Node(
-    #     package="rviz2",
-    #     executable="rviz2",
-    #     name="rviz2",
-    #     output="log",
-    #     arguments=["-d", rviz_config_file],
-    #     parameters=[
-    #         moveit_config.robot_description,
-    #         moveit_config.robot_description_semantic,
-    #     ],
-    # )
+    rviz_config_file = (
+        get_package_share_directory("rover_arm") + "/config/rviz_config.rviz"
+    )
+    rviz_node = Node(
+        package="rviz2",
+        executable="rviz2",
+        name="rviz2",
+        output="log",
+        arguments=["-d", rviz_config_file],
+        parameters=[
+            moveit_config.robot_description,
+            moveit_config.robot_description_semantic,
+            moveit_config.robot_description_kinematics,
+        ],
+    )
 
 
 
@@ -135,7 +137,7 @@ def generate_launch_description():
     joy_node = Node(
         package="joy",
         executable="joy_node",
-        name="joy_node"
+        name="joy_node",
     )
 
     servo_node = Node(
@@ -150,6 +152,10 @@ def generate_launch_description():
         output="screen",
     )
 
+    joy_to_servo_node = Node(
+        package="joy_to_servo",
+        executable="joy_to_servo_node",
+    )
 
     nodes = [
         control_node,
@@ -158,8 +164,10 @@ def generate_launch_description():
         delay_robot_controller_spawner_after_joint_state_broadcaster_spawner,
         joy_node,
         servo_node,
-        # rviz_node,
-
+        joy_to_servo_node,
+        rviz_node,
     ]
+
+    
 
     return LaunchDescription(declared_arguments + nodes)
