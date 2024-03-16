@@ -8,6 +8,8 @@
 #include "rclcpp/rclcpp.hpp"
 #include "socket_can.hpp"
 
+#define M_TAU 6.2831853071
+
 namespace odrive_ros2_control {
 
 class Axis;
@@ -284,13 +286,13 @@ return_type ODriveHardwareInterface::write(const rclcpp::Time&, const rclcpp::Du
         // Send the CAN message that fits the set of enabled setpoints
         if (axis.pos_input_enabled_) {
             Set_Input_Pos_msg_t msg;
-            msg.Input_Pos = axis.pos_setpoint_*axis.gear_ratio_;
-            msg.Vel_FF = axis.vel_input_enabled_ ? axis.vel_setpoint_*axis.gear_ratio_ : 0.0f;
+            msg.Input_Pos = axis.pos_setpoint_*axis.gear_ratio_/M_TAU;
+            msg.Vel_FF = axis.vel_input_enabled_ ? axis.vel_setpoint_*axis.gear_ratio_/M_TAU : 0.0f;
             msg.Torque_FF = axis.torque_input_enabled_ ? axis.torque_setpoint_/axis.gear_ratio_ : 0.0f;
             axis.send(msg);
         } else if (axis.vel_input_enabled_) {
             Set_Input_Vel_msg_t msg;
-            msg.Input_Vel = axis.vel_setpoint_*axis.gear_ratio_;
+            msg.Input_Vel = axis.vel_setpoint_*axis.gear_ratio_/M_TAU;
             msg.Input_Torque_FF = axis.torque_input_enabled_ ? axis.torque_setpoint_/axis.gear_ratio_ : 0.0f;
             axis.send(msg);
         } else if (axis.torque_input_enabled_) {
@@ -328,8 +330,8 @@ void Axis::on_can_msg(const rclcpp::Time&, const can_frame& frame) {
     switch (cmd) {
         case Get_Encoder_Estimates_msg_t::cmd_id: {
             if (Get_Encoder_Estimates_msg_t msg; try_decode(msg)) {
-                pos_estimate_ = msg.Pos_Estimate/gear_ratio_;
-                vel_estimate_ = msg.Vel_Estimate/gear_ratio_;
+                pos_estimate_ = M_TAU*msg.Pos_Estimate/gear_ratio_;
+                vel_estimate_ = M_TAU*msg.Vel_Estimate/gear_ratio_;
             }
         } break;
         case Get_Torques_msg_t::cmd_id: {

@@ -81,6 +81,7 @@ enum Button
   RIGHT_STICK_CLICK = 10
 };
 
+
 // Some axes have offsets (e.g. the default trigger position is 1.0 not 0)
 // This will map the default values for the axes
 std::map<Axis, double> AXIS_DEFAULTS = { { LEFT_TRIGGER, 1.0 }, { RIGHT_TRIGGER, 1.0 } };
@@ -101,33 +102,48 @@ bool convertJoyToCmd(const std::vector<float>& axes, const std::vector<int>& but
 {
   // Give joint jogging priority because it is only buttons
   // If any joint jog command is requested, we are only publishing joint commands
-  if (buttons[A] || buttons[B] || buttons[X] || buttons[Y] || axes[D_PAD_X] || axes[D_PAD_Y])
-  {
-    // Map the D_PAD to the proximal joints
-    joint->joint_names.push_back("base_joint");
-    joint->velocities.push_back(axes[D_PAD_X]);
-    joint->joint_names.push_back("shoulder_joint");
-    joint->velocities.push_back(axes[D_PAD_Y]);
 
-    return false;
-  }
+  joint->joint_names.push_back("base_joint");
+  joint->velocities.push_back(axes[D_PAD_X]);
+  joint->joint_names.push_back("shoulder_joint");
+  joint->velocities.push_back(axes[D_PAD_Y]);
+  joint->joint_names.push_back("elbow_pitch_joint");
+  joint->velocities.push_back(axes[LEFT_STICK_Y]);
+  joint->joint_names.push_back("elbow_roll_joint");
+  joint->velocities.push_back(axes[LEFT_STICK_X]);
+  joint->joint_names.push_back("wrist_pitch_joint");
+  joint->velocities.push_back(axes[RIGHT_STICK_Y]);
+  joint->joint_names.push_back("wrist_roll_joint");
+  joint->velocities.push_back(axes[RIGHT_STICK_X]);
 
-  // The bread and butter: map buttons to twist commands
-  twist->twist.linear.z = axes[RIGHT_STICK_Y];
-  twist->twist.linear.y = axes[RIGHT_STICK_X];
+  return false;
+  // if (buttons[A] || buttons[B] || buttons[X] || buttons[Y] || axes[D_PAD_X] || axes[D_PAD_Y])
+  // {
+  //   // Map the D_PAD to the proximal joints
+  //   joint->joint_names.push_back("base_joint");
+  //   joint->velocities.push_back(axes[D_PAD_X]);
+  //   joint->joint_names.push_back("shoulder_joint");
+  //   joint->velocities.push_back(axes[D_PAD_Y]);
 
-  double lin_x_right = -0.5 * (axes[RIGHT_TRIGGER] - AXIS_DEFAULTS.at(RIGHT_TRIGGER));
-  double lin_x_left = 0.5 * (axes[LEFT_TRIGGER] - AXIS_DEFAULTS.at(LEFT_TRIGGER));
-  twist->twist.linear.x = lin_x_right + lin_x_left;
+  //   return false;
+  // }
 
-  twist->twist.angular.y = axes[LEFT_STICK_Y];
-  twist->twist.angular.x = axes[LEFT_STICK_X];
+  // // The bread and butter: map buttons to twist commands
+  // twist->twist.linear.z = axes[RIGHT_STICK_Y];
+  // twist->twist.linear.y = axes[RIGHT_STICK_X];
 
-  double roll_positive = buttons[RIGHT_BUMPER];
-  double roll_negative = -1 * (buttons[LEFT_BUMPER]);
-  twist->twist.angular.z = roll_positive + roll_negative;
+  // double lin_x_right = -0.5 * (axes[RIGHT_TRIGGER] - AXIS_DEFAULTS.at(RIGHT_TRIGGER));
+  // double lin_x_left = 0.5 * (axes[LEFT_TRIGGER] - AXIS_DEFAULTS.at(LEFT_TRIGGER));
+  // twist->twist.linear.x = lin_x_right + lin_x_left;
 
-  return true;
+  // twist->twist.angular.y = axes[LEFT_STICK_Y];
+  // twist->twist.angular.x = axes[LEFT_STICK_X];
+
+  // double roll_positive = buttons[RIGHT_BUMPER];
+  // double roll_negative = -1 * (buttons[LEFT_BUMPER]);
+  // twist->twist.angular.z = roll_positive + roll_negative;
+
+  //return true;
 }
 
 /** \brief // This should update the frame_to_publish_ as needed for changing command frame via controller
@@ -197,7 +213,7 @@ class JoyToServoNode : public rclcpp::Node {
       {
         // publish the JointJog
         joint_msg->header.stamp = this->now();
-        joint_msg->header.frame_id = "arm_link_1";
+        joint_msg->header.frame_id = "arm_link_4";
         joint_pub_->publish(std::move(joint_msg));
       }
     }
