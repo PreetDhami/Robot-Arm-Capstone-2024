@@ -50,7 +50,7 @@
 const std::string JOY_TOPIC = "/joy";
 const std::string TWIST_TOPIC = "/servo_node/delta_twist_cmds";
 const std::string JOINT_TOPIC = "/servo_node/delta_joint_cmds";
-const std::string EEF_FRAME_ID = "arm_gripper";
+const std::string EEF_FRAME_ID = "arm_link_4";
 const std::string BASE_FRAME_ID = "base_link";
 
 // Enums for button names -> axis/button array index
@@ -163,11 +163,11 @@ class JoyToServoNode : public rclcpp::Node {
       servo_start_client_->wait_for_service(std::chrono::seconds(1));
       servo_start_client_->async_send_request(std::make_shared<std_srvs::srv::Trigger::Request>());
 
-      // Load the collision scene asynchronously
-      // collision_pub_thread_ = std::thread([this]() {
-      //   auto ps = std::make_unique<moveit_msgs::msg::PlanningScene>();
-      //   collision_pub_->publish(std::move(ps));
-      // });
+      moveit_msgs::msg::PlanningSceneWorld psw;
+      auto ps = std::make_unique<moveit_msgs::msg::PlanningScene>();
+      ps->world = psw;
+      ps->is_diff = true;
+      collision_pub_->publish(std::move(ps));
     }
 
     ~JoyToServoNode() override

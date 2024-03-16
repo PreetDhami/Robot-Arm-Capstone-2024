@@ -1,55 +1,36 @@
-import os
 import yaml
 from launch import LaunchDescription
 from launch.actions import RegisterEventHandler
 from launch.event_handlers import OnProcessExit
-from launch.substitutions import Command, FindExecutable, PathJoinSubstitution
 from launch_ros.actions import Node
-from launch_ros.substitutions import FindPackageShare
 from moveit_configs_utils import MoveItConfigsBuilder
 
 
 from ament_index_python.packages import get_package_share_directory
 
 
-def load_yaml(package_name, file_path):
-    package_path = get_package_share_directory(package_name)
-    absolute_file_path = os.path.join(package_path, file_path)
-
-    try:
-        with open(absolute_file_path, "r") as file:
-            return yaml.safe_load(file)
-    except EnvironmentError:  # parent of IOError, OSError *and* WindowsError where available
-        return None
-
-
 def generate_launch_description():
-
-
-    # Get URDF via xacro
-    robot_description_content = Command(
-        [
-            PathJoinSubstitution([FindExecutable(name="xacro")]),
-            " ",
-            PathJoinSubstitution(
-                [FindPackageShare("rover_arm"), "config", "rover_arm.urdf.xacro"]
-            ),
-
-        ]
-    )
-    robot_description = {"robot_description": robot_description_content}
 
     moveit_config = (
         MoveItConfigsBuilder("rover_arm", package_name="rover_arm")
         .robot_description(file_path="config/rover_arm.urdf.xacro")
         .to_moveit_configs()
     )
-    servo_yaml = load_yaml("rover_arm", "config/servo_config.yaml")
+
+    
+    servo_yaml = yaml.safe_load(open((get_package_share_directory("rover_arm") + "/config/servo_config.yaml"), "r"))
     servo_params = {"moveit_servo": servo_yaml}
 
     rviz_config_file = (
         get_package_share_directory("rover_arm") + "/config/rviz_config.rviz"
     )
+
+    robot_controllers = (
+        get_package_share_directory("rover_arm") + "/config/ros2_controllers.yaml"
+    )
+
+
+
     rviz_node = Node(
         package="rviz2",
         executable="rviz2",
@@ -59,17 +40,11 @@ def generate_launch_description():
         parameters=[
             moveit_config.robot_description,
             moveit_config.robot_description_semantic,
-
         ],
     )
 
-    robot_controllers = PathJoinSubstitution(
-        [
-            FindPackageShare("rover_arm"),
-            "config",
-            "ros2_controllers.yaml",
-        ]
-    )
+
+
 
     control_node = Node(
         package="controller_manager",
@@ -82,8 +57,7 @@ def generate_launch_description():
         package="robot_state_publisher",
         executable="robot_state_publisher",
         output="both",
-        parameters=[robot_description],
-
+        parameters=[moveit_config.robot_description],
     )
 
 
@@ -102,7 +76,6 @@ def generate_launch_description():
 
 
 
-
     # Delay start of robot_controller after `joint_state_broadcaster`
     delay_robot_controller_spawner_after_joint_state_broadcaster_spawner = RegisterEventHandler(
         event_handler=OnProcessExit(
@@ -110,6 +83,7 @@ def generate_launch_description():
             on_exit=[robot_controller_spawner],
         )
     )
+
     joy_node = Node(
         package="joy",
         executable="joy_node",
@@ -132,6 +106,7 @@ def generate_launch_description():
         package="joy_to_servo",
         executable="joy_to_servo_node",
     )
+
 
     nodes = [
         control_node,
