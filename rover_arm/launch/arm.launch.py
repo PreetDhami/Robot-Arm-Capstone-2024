@@ -30,7 +30,6 @@ def generate_launch_description():
     )
 
 
-
     rviz_node = Node(
         package="rviz2",
         executable="rviz2",
@@ -42,9 +41,6 @@ def generate_launch_description():
             moveit_config.robot_description_semantic,
         ],
     )
-
-
-
 
     control_node = Node(
         package="controller_manager",
@@ -60,12 +56,10 @@ def generate_launch_description():
         parameters=[moveit_config.robot_description],
     )
 
-
     joint_state_broadcaster_spawner = Node(
         package="controller_manager",
         executable="spawner",
         arguments=["joint_state_broadcaster", "--controller-manager", "/controller_manager"],
-
     )
 
     robot_controller_spawner = Node(
@@ -73,8 +67,6 @@ def generate_launch_description():
         executable="spawner",
         arguments=["rover_arm_controller", "--controller-manager", "/controller_manager"],
     )
-
-
 
     # Delay start of robot_controller after `joint_state_broadcaster`
     delay_robot_controller_spawner_after_joint_state_broadcaster_spawner = RegisterEventHandler(
