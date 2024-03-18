@@ -29,7 +29,7 @@ ros2 launch rover_arm arm.launch.py
 ```
 
 
-## Code Explanation
+## Packages
 Below are all the included packages, a brief explanation of their content, and a link to reference documentation for further reading:
 - `rover_arm_urdf`: This includes the URDF description of the rover arm, as well as the necessary mesh files (.stl and .dae). This was created by following [this article](https://control.ros.org/humble/doc/ros2_control_demos/example_7/doc/userdoc.html#writing-a-urdf) from `ros2_control` as an example
 
@@ -38,3 +38,24 @@ Below are all the included packages, a brief explanation of their content, and a
 - `joy_to_servo`: The package `moveit_servo` is used to do all calculations for operating the arm from some input. The `joy` package is used to read inputs from a gamepad. This package serves as a bridge between these two. Any efforts to re-map user control to operate the rover should be changed here. As of right now, inverse kinematics does not work with user operation, so all control is done on individual joints. This code was adapted from 
 
 - `rover_arm`: Finally, this is the main package which contains the launch files for the arm, as well as ALL of the config files for the other packages.
+
+## Nodes
+The main launch file is `arm.launch.py`, however there are other automatically generated launch files that have been left as they are. `demo.launch.py` runs inverse the inverse kinematics solver within RVIZ, so that the user can drag around the end effector and command the arm throught the GUI. 
+
+`arm.launch.py` runs the following nodes:
+
+- `Rviz`: Handles displaying robot to gui. Comment out to disable.
+
+- `control_node`: Loads the rover arm controller and hardware plugin (odrive_ros2_control package) as specified by the rover_arm.urdf.xacro file. Subscribes to `/rover_arm_controller/joint_tragectory` topic, and passes the inputs along to odrive plugin for each joint.
+
+- `robot_state_pub_node`: Publishes the robot state to the `/state` topic. 
+
+- `joint_state_broadcaster_spawner`: spawns the joint_state_broadcaster, which other nodes subscribe to.
+
+- `robot_controller_spawner`: spawns the controller manager to manage multiple controller, if there were any. 
+
+- `joy_node`: Publishes gamepad inputs to `/joy` topic.
+
+- `servo_node`: Listens to `/delta_joint_cmds` and `/delta_twist_cmds`, preforms calculations on whether the requested movement is valid or not (according to kinematics.yaml, rover_arm.urdf.xacro, and servo_config.yaml). `/delta_joint_cmds` Sepcifies how to change the angular positions/velocities of individual joints, whereas `/delta_twist_cmds` should specify how to move the cartesian positions/velocities of robot links (inverse kinematics). Currently, only `/delta_joint_cmds` is functioning. If a requested movement will not have a self-collision and stays within joint limits, then it publishes to the `/rover_arm_controller/joint_tragectory` topic.
+
+- `joy_to_servo_node`: Custom node which listens to `/joy` topic and outputs to `/delta_joint_cmds` and `/delta_twist_cmds`. Change the code of this node if you would like to remap how the gamepad operates the arm.
