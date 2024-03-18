@@ -9,7 +9,7 @@ A working installation of ROS2 Humble is required. To install the code, first cl
 ```
 mkdir arm_ws
 cd arm_ws
-git pull https://www.github.com/PreetDhami/Robot-Arm-Capstone-2024
+git pull https://www.github.com/PreetDhami/rover_arm_capstone_2024
 ```
 Next, install dependencies using rosdep:
 
@@ -17,7 +17,7 @@ Next, install dependencies using rosdep:
 sudo apt-get install python3-rosdep
 rosdep init
 rosdep update
-rosdep install --from-paths Robot-Arm-Capstone-2024 -y --ignore-src
+rosdep install --from-paths rover_arm_capstone_2024 -y --ignore-src
 ```
 Then, compile with colcon and source the installation:
 ```
@@ -35,7 +35,7 @@ Below are all the included packages, a brief explanation of their content, and a
 
 - `odrive_ros2_control` and `odrive_base`: These were originally made by Odrive Robotics from [this repo](https://github.com/odriverobotics/odrive_can/tree/ros-control), but were modified to consider gear ratios and units when communicating between ROS2 and the Odrive S1's. ROS uses radians, whereas the Odrives use rotations. `ros2_control` uses the angular positions and velocities of each joint rather than those of the motors.
 
-- `joy_to_servo`: The package `moveit_servo` is used to do all calculations for operating the arm from some input. The `joy` package is used to read inputs from a gamepad. This package serves as a bridge between these two. Any efforts to re-map user control to operate the rover should be changed here. As of right now, inverse kinematics does not work with user operation, so all control is done on individual joints. This code was adapted from 
+- `joy_to_servo`: The package `moveit_servo` is used to do all calculations for operating the arm from some input. The `joy` package is used to read inputs from a gamepad. This package serves as a bridge between these two. Any efforts to re-map user control to operate the rover should be changed here. As of right now, inverse kinematics does not work with user operation, so all control is done on individual joints. An explanation of this code, as well as `moveit_servo` is found [here](https://moveit.picknik.ai/humble/doc/examples/realtime_servo/realtime_servo_tutorial.html). This code was clone and modified from [this example](https://github.com/ros-planning/moveit2/blob/humble/moveit_ros/moveit_servo/src/teleop_demo/joystick_servo_example.cpp).
 
 - `rover_arm`: Finally, this is the main package which contains the launch files for the arm, as well as ALL of the config files for the other packages.
 
