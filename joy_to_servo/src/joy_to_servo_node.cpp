@@ -50,7 +50,7 @@
 const std::string JOY_TOPIC = "/joy";
 const std::string TWIST_TOPIC = "/servo_node/delta_twist_cmds";
 const std::string JOINT_TOPIC = "/servo_node/delta_joint_cmds";
-const std::string EEF_FRAME_ID = "arm_link_4";
+const std::string EEF_FRAME_ID = "arm_gripper";
 const std::string BASE_FRAME_ID = "base_link";
 
 // Enums for button names -> axis/button array index
@@ -96,27 +96,28 @@ std::map<Button, double> BUTTON_DEFAULTS;
  * @param joint A JointJog message to update in prep for publishing
  * @return return true if you want to publish a Twist, false if you want to publish a JointJog
  */
-bool convertJoyToCmd(const std::vector<float>& axes, const std::vector<int>& buttons,
+int convertJoyToCmd(const std::vector<float>& axes, const std::vector<int>& buttons,
                      std::unique_ptr<geometry_msgs::msg::TwistStamped>& twist,
                      std::unique_ptr<control_msgs::msg::JointJog>& joint)
 {
   // Give joint jogging priority because it is only buttons
   // If any joint jog command is requested, we are only publishing joint commands
-
-  joint->joint_names.push_back("base_joint");
-  joint->velocities.push_back(axes[D_PAD_X]);
-  joint->joint_names.push_back("shoulder_joint");
-  joint->velocities.push_back(axes[D_PAD_Y]);
-  joint->joint_names.push_back("elbow_pitch_joint");
-  joint->velocities.push_back(axes[LEFT_STICK_Y]);
-  joint->joint_names.push_back("elbow_roll_joint");
-  joint->velocities.push_back(axes[LEFT_STICK_X]);
-  joint->joint_names.push_back("wrist_pitch_joint");
-  joint->velocities.push_back(axes[RIGHT_STICK_Y]);
-  joint->joint_names.push_back("wrist_roll_joint");
-  joint->velocities.push_back(axes[RIGHT_STICK_X]);
-
-  return false;
+  if(axes[D_PAD_X] || axes[D_PAD_Y] || axes[LEFT_STICK_X] || axes[LEFT_STICK_Y] || axes[RIGHT_STICK_X] || axes[RIGHT_STICK_Y]){
+    joint->joint_names.push_back("base_joint");
+    joint->velocities.push_back(axes[D_PAD_X]);
+    joint->joint_names.push_back("shoulder_joint");
+    joint->velocities.push_back(axes[D_PAD_Y]);
+    joint->joint_names.push_back("elbow_pitch_joint");
+    joint->velocities.push_back(axes[LEFT_STICK_Y]);
+    joint->joint_names.push_back("elbow_roll_joint");
+    joint->velocities.push_back(axes[LEFT_STICK_X]);
+    joint->joint_names.push_back("wrist_pitch_joint");
+    joint->velocities.push_back(axes[RIGHT_STICK_Y]);
+    joint->joint_names.push_back("wrist_roll_joint");
+    joint->velocities.push_back(axes[RIGHT_STICK_X]);
+    return 2;
+  }
+  // return false;
   // if (buttons[A] || buttons[B] || buttons[X] || buttons[Y] || axes[D_PAD_X] || axes[D_PAD_Y])
   // {
   //   // Map the D_PAD to the proximal joints
@@ -125,10 +126,10 @@ bool convertJoyToCmd(const std::vector<float>& axes, const std::vector<int>& but
   //   joint->joint_names.push_back("shoulder_joint");
   //   joint->velocities.push_back(axes[D_PAD_Y]);
 
-  //   return false;
+  //   return 1;
   // }
 
-  // // The bread and butter: map buttons to twist commands
+  // The bread and butter: map buttons to twist commands
   // twist->twist.linear.z = axes[RIGHT_STICK_Y];
   // twist->twist.linear.y = axes[RIGHT_STICK_X];
 
@@ -143,7 +144,7 @@ bool convertJoyToCmd(const std::vector<float>& axes, const std::vector<int>& but
   // double roll_negative = -1 * (buttons[LEFT_BUMPER]);
   // twist->twist.angular.z = roll_positive + roll_negative;
 
-  //return true;
+  return 0;
 }
 
 /** \brief // This should update the frame_to_publish_ as needed for changing command frame via controller
@@ -201,19 +202,20 @@ class JoyToServoNode : public rclcpp::Node {
       // This call updates the frame for twist commands
       updateCmdFrame(frame_to_publish_, msg->buttons);
 
+      int selection = convertJoyToCmd(msg->axes, msg->buttons, twist_msg, joint_msg);
       // Convert the joystick message to Twist or JointJog and publish
-      if (convertJoyToCmd(msg->axes, msg->buttons, twist_msg, joint_msg))
+      if (selection == 1)
       {
         // publish the TwistStamped
         twist_msg->header.frame_id = frame_to_publish_;
         twist_msg->header.stamp = this->now();
         twist_pub_->publish(std::move(twist_msg));
       }
-      else
+      else if(selection == 2)
       {
         // publish the JointJog
         joint_msg->header.stamp = this->now();
-        joint_msg->header.frame_id = "arm_link_4";
+        joint_msg->header.frame_id = "base_link";
         joint_pub_->publish(std::move(joint_msg));
       }
     }
