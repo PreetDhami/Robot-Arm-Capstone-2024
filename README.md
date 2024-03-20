@@ -9,7 +9,7 @@ A working installation of ROS2 Humble is required. To install the code, first cl
 ```
 mkdir arm_ws
 cd arm_ws
-git pull https://www.github.com/PreetDhami/rover_arm_capstone_2024
+git clone https://www.github.com/PreetDhami/rover_arm_capstone_2024
 ```
 Next, install dependencies using rosdep:
 
