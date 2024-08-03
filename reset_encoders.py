@@ -12,9 +12,10 @@ ids = {}
 
 for msg in bus:
     ids[int(msg.arbitration_id)] = msg.data
+    print(ids)
 
-    
-print(ids)
+
+
 
 
 
