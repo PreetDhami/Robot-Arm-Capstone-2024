@@ -106,7 +106,7 @@ bool convertJoyToCmd(const std::vector<float>& axes, const std::vector<int>& but
     use_ik = false;
     
   }
-  else if(buttons[HOME]){
+  else if(buttons[CHANGE_VIEW]){
     use_ik = true;
   }
 
