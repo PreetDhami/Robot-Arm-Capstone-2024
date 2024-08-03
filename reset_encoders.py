@@ -8,7 +8,7 @@ filters = [
 bus = can.interface.Bus(channel="can0", interface="socketcan", can_filters=filters)
 time.sleep(0.5)
 
-ids = []
+ids = {}
 
 for msg in bus:
     ids[msg.arbitration_id] = msg.data
