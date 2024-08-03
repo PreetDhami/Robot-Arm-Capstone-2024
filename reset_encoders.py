@@ -11,8 +11,10 @@ time.sleep(0.5)
 ids = {}
 
 for msg in bus:
-    ids[msg.arbitration_id] = msg.data
-    print(msg.arbitration_id)
+    ids[int(msg.arbitration_id)] = msg.data
+
+    
+print(ids)
 
 
 
