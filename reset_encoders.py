@@ -13,7 +13,7 @@ def main():
 
     for msg in bus:
         ids[msg.arbitration_id] = msg.data
-        print(ids)
+    print(ids)
 
 
 
