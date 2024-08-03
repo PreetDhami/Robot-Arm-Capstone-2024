@@ -153,7 +153,7 @@ bool convertJoyToCmd(const std::vector<float>& axes, const std::vector<int>& but
     joint->joint_names.push_back("wrist_roll_joint");
     joint->velocities.push_back(axes[RIGHT_STICK_X]);
 
-    return false
+    return false;
   }
 
 
