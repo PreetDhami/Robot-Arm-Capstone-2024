@@ -13,7 +13,8 @@ ids = {}
 for msg in bus:
     ids[msg.arbitration_id] = msg.data
 
-print(ids)
-
+for keys,values in ids.items():
+    print(keys)
+    print(values)
 
 
