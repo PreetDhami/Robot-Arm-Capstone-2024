@@ -97,39 +97,68 @@ std::map<Button, double> BUTTON_DEFAULTS;
  */
 bool convertJoyToCmd(const std::vector<float>& axes, const std::vector<int>& buttons,
                      std::unique_ptr<geometry_msgs::msg::TwistStamped>& twist,
-                     std::unique_ptr<control_msgs::msg::JointJog>& joint)
+                     std::unique_ptr<control_msgs::msg::JointJog>& joint,
+                     bool& use_ik)
 {
   // Give joint jogging priority because it is only buttons
   // If any joint jog command is requested, we are only publishing joint commands
-  if (axes[D_PAD_Y] || buttons[LEFT_BUMPER] || buttons[RIGHT_BUMPER])
-  {
-    // Map the D_PAD to the proximal joints
-    // joint->joint_names.push_back("base_joint");
-    // joint->velocities.push_back(axes[D_PAD_X]);
+  if(buttons[MENU]){
+    use_ik = false;
+    
+  }
+  else if(buttons[CHANGE_VIEW]){
+    use_ik = true;
+  }
+
+  if(use_ik){ //ik controls
+    if (axes[D_PAD_Y] || buttons[LEFT_BUMPER] || buttons[RIGHT_BUMPER])
+    {
+      // Map the D_PAD to the proximal joints
+      // joint->joint_names.push_back("base_joint");
+      // joint->velocities.push_back(axes[D_PAD_X]);
+      joint->joint_names.push_back("shoulder_joint");
+      joint->velocities.push_back(axes[D_PAD_Y]);
+      joint->joint_names.push_back("wrist_roll_joint");
+      joint->velocities.push_back(buttons[RIGHT_BUMPER] - buttons[LEFT_BUMPER]);
+      // Map the diamond to the distal joints
+      return false;
+    }
+
+    // The bread and butter: map buttons to twist commands
+    twist->twist.linear.z = axes[LEFT_STICK_Y];
+    twist->twist.linear.x = axes[LEFT_STICK_X];
+
+    double lin_y_right = -0.5 * (axes[RIGHT_TRIGGER] - AXIS_DEFAULTS.at(RIGHT_TRIGGER));
+    double lin_y_left = 0.5 * (axes[LEFT_TRIGGER] - AXIS_DEFAULTS.at(LEFT_TRIGGER));
+    twist->twist.linear.y = lin_y_right + lin_y_left;
+
+
+    twist->twist.angular.x = axes[RIGHT_STICK_Y];
+
+    // double roll_positive = buttons[RIGHT_BUMPER];
+    // double roll_negative = -1 * (buttons[LEFT_BUMPER]);
+    // twist->twist.angular.z = roll_positive + roll_negative;
+
+    return true;
+  }
+  else{ //joint by joint control
+    joint->joint_names.push_back("base_joint");
+    joint->velocities.push_back(axes[D_PAD_X] * 0.30);
     joint->joint_names.push_back("shoulder_joint");
-    joint->velocities.push_back(axes[D_PAD_Y]);
+    joint->velocities.push_back(axes[D_PAD_Y] * 0.25);
+    joint->joint_names.push_back("elbow_pitch_joint");
+    joint->velocities.push_back(axes[LEFT_STICK_Y] * 0.30);
+    joint->joint_names.push_back("elbow_roll_joint");
+    joint->velocities.push_back(axes[LEFT_STICK_X] * 0.25);
+    joint->joint_names.push_back("wrist_pitch_joint");
+    joint->velocities.push_back(axes[RIGHT_STICK_Y] * 0.30);
     joint->joint_names.push_back("wrist_roll_joint");
-    joint->velocities.push_back(buttons[RIGHT_BUMPER] - buttons[LEFT_BUMPER]);
-    // Map the diamond to the distal joints
+    joint->velocities.push_back(axes[RIGHT_STICK_X]);
+
     return false;
   }
 
-  // The bread and butter: map buttons to twist commands
-  twist->twist.linear.z = axes[LEFT_STICK_Y];
-  twist->twist.linear.x = axes[LEFT_STICK_X];
 
-  double lin_y_right = -0.5 * (axes[RIGHT_TRIGGER] - AXIS_DEFAULTS.at(RIGHT_TRIGGER));
-  double lin_y_left = 0.5 * (axes[LEFT_TRIGGER] - AXIS_DEFAULTS.at(LEFT_TRIGGER));
-  twist->twist.linear.y = lin_y_right + lin_y_left;
-
-
-  twist->twist.angular.x = axes[RIGHT_STICK_Y];
-
-  // double roll_positive = buttons[RIGHT_BUMPER];
-  // double roll_negative = -1 * (buttons[LEFT_BUMPER]);
-  // twist->twist.angular.z = roll_positive + roll_negative;
-
-  return true;
 }
 
 /** \brief // This should update the frame_to_publish_ as needed for changing command frame via controller
@@ -151,6 +180,9 @@ public:
   JoyToServoNode(const rclcpp::NodeOptions& options)
     : Node("joy_to_twist_publisher", options), frame_to_publish_(BASE_FRAME_ID)
   {
+
+    use_ik = false;
+
     // Setup pub/sub
     joy_sub_ = this->create_subscription<sensor_msgs::msg::Joy>(
         JOY_TOPIC, rclcpp::SystemDefaultsQoS(),
@@ -224,7 +256,7 @@ public:
     updateCmdFrame(frame_to_publish_, msg->buttons);
 
     // Convert the joystick message to Twist or JointJog and publish
-    if (convertJoyToCmd(msg->axes, msg->buttons, twist_msg, joint_msg))
+    if (convertJoyToCmd(msg->axes, msg->buttons, twist_msg, joint_msg, use_ik))
     {
       // publish the TwistStamped
       twist_msg->header.frame_id = frame_to_publish_;
@@ -246,6 +278,8 @@ private:
   rclcpp::Publisher<control_msgs::msg::JointJog>::SharedPtr joint_pub_;
   rclcpp::Publisher<moveit_msgs::msg::PlanningScene>::SharedPtr collision_pub_;
   rclcpp::Client<std_srvs::srv::Trigger>::SharedPtr servo_start_client_;
+
+  bool use_ik;
 
   std::string frame_to_publish_;
 
