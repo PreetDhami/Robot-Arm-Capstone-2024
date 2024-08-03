@@ -147,7 +147,7 @@ bool convertJoyToCmd(const std::vector<float>& axes, const std::vector<int>& but
     joint->joint_names.push_back("shoulder_joint");
     joint->velocities.push_back(axes[D_PAD_Y] * 0.25);
     joint->joint_names.push_back("elbow_pitch_joint");
-    joint->velocities.push_back(axes[LEFT_STICK_Y] * 0.30);
+    joint->velocities.push_back(axes[LEFT_STICK_Y] * -0.30); //THIS JOINT IS BACKWARDS
     joint->joint_names.push_back("elbow_roll_joint");
     joint->velocities.push_back(axes[LEFT_STICK_X] * 0.25);
     joint->joint_names.push_back("wrist_pitch_joint");
