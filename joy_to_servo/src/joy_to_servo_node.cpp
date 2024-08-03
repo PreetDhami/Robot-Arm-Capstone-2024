@@ -256,7 +256,7 @@ public:
     updateCmdFrame(frame_to_publish_, msg->buttons);
 
     // Convert the joystick message to Twist or JointJog and publish
-    if (convertJoyToCmd(msg->axes, msg->buttons, twist_msg, joint_msg, self.use_ik))
+    if (convertJoyToCmd(msg->axes, msg->buttons, twist_msg, joint_msg, use_ik))
     {
       // publish the TwistStamped
       twist_msg->header.frame_id = frame_to_publish_;
